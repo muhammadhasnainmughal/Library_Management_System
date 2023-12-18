@@ -1,7 +1,8 @@
-#include<iostream>
+#include <iostream>
 #include <iomanip>
 #include <cstring>
 #include <ctime>
+#include <unistd.h> // for sleep function
 
 using namespace std;
 
@@ -32,6 +33,39 @@ struct Book {
     IssuedBook issuedCopies[MAX_COPIES];  // Store information about each issued copy
 };
 
+// Function to display the splash screen
+void displaySplashScreen() {
+    cout << "\n\n\n\n\n";
+    cout << "\t\t\t\t\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+    cout << "\t\t\t\t\t           WELCOME TO" << endl;
+	cout << "\t\t\t\t\t   LIBRARY MANAGNEMNT SYSTEM" << endl;
+	cout << "\t\t\t\t\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+	cout << "\t\t\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+    cout << "\t\t\t   DEVELOPED BY: M HASNAIN MUGHAL|SHEHROZ ALI|KHALIL AREJO\n";
+    cout << "\t\t\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n";
+    cout << "\t\t\t\t\t          Loading";
+}
+
+// Function to loading with a delay
+void loading() {
+    for(int i = 6;i >= 1;i--)
+	{	
+		cout << ".";
+		cout.flush();
+		sleep(1);
+	}
+	system("CLS");
+}
+
+void header(){
+	cout << "\t\t\t\t\t*******************************" << endl;
+	cout << "\t\t\t\t\t   LIBRARY MANAGNEMNT SYSTEM" << endl;
+	cout << "\t\t\t\t\t*******************************" << endl;
+	cout << "\t\t\t*************************************************************\n";
+    cout << "\t\t\t   DEVELOPED BY: M HASNAIN MUGHAL|SHEHROZ ALI|KHALIL AREJO\n";
+    cout << "\t\t\t*************************************************************\n\n";
+}
+
 // Function to parse a date string into a tm structure
 void parseDate(const string& dateStr, tm& date) {
     if (sscanf(dateStr.c_str(), "%d-%d-%d", &date.tm_year, &date.tm_mon, &date.tm_mday) != 3) {
@@ -44,14 +78,14 @@ void parseDate(const string& dateStr, tm& date) {
 void addBook(Book library[], int& count) {
     if (count >= MAX_BOOKS) {
     	cout << "\n-------------------------------------------\n";
-        cout << "    Library is full. Cannot add more books.";
+        cout << "  Library is full. Cannot add more books.";
         cout << "\n-------------------------------------------\n";
         return;
     }
 
     Book newBook;
     cout << "\n------------------------------\n";
-    cout << "    <== Enter Book Details ==>";
+    cout << "  <== Enter Book Details ==>";
     cout << "\n------------------------------\n";
     cout << "ID: ";
     cin >> newBook.id;
@@ -71,19 +105,19 @@ void addBook(Book library[], int& count) {
     library[count++] = newBook;
     
     cout << "\n---------------------------\n";
-    cout << "    Book Added Successfully";
+    cout << "  Book Added Successfully";
     cout << "\n---------------------------\n";
 }
 
 void printBooks(const Book library[], int count) {
     if (count == 0) {
     	cout << "\n----------------------------\n";
-        cout << "    No books in the library.";
+        cout << "  No books in the library.";
         cout << "\n----------------------------\n";
         return;
     }
 	cout << "\n---------------------\n";
-    cout << "    <== All Books ==>";
+    cout << "  <== All Books ==>";
     cout << "\n---------------------\n";
     cout << setw(5) << "ID" << setw(20) << "Book Name" << setw(20) << "Author Name" << setw(15) << "Quantity" << endl;
 
@@ -119,38 +153,86 @@ void issueBook(Book library[], int count) {
                 cout << "Enter Student Section: ";
                 cin.getline(issuedCopy.borrower.studentClass, 20);
 
-                // Manually enter the issue date
-                string issueDateStr;
-                cout << "Enter Issue Date (YYYY-MM-DD): ";
-                cin >> issueDateStr;
+                // Automatically set the issue date to the current date
+                time_t currentTime = time(0);
+                tm* issueDate = localtime(&currentTime);
+                issuedCopy.issueDate = mktime(issueDate);
 
-                tm issueDate = {};
-                parseDate(issueDateStr, issueDate);
-                issuedCopy.issueDate = mktime(&issueDate);
+                // Automatically set the return date to 7 days later
+                tm* returnDate = localtime(&currentTime);
+                returnDate->tm_sec += 7 * 24 * 60 * 60; // 7 days in seconds
+                issuedCopy.returnDate = mktime(returnDate);
 
-				cout << "\n----------------------------\n";
-                cout << "    Book Issued Successfully";
-                cout << "\n----------------------------\n";
-                
+                cout << "\n--------------------------------------------\n";
+                cout << "  Book Issued Successfully" << endl;
+                cout << "  Return Date: " << asctime(returnDate);
+                cout << "----------------------------------------------\n";
+
             } else if(library[i].quantity == 1) {
-            	
-            	cout << "\n----------------------\n";
-                cout << "    No Last Copy Issue";
+
+                cout << "\n----------------------\n";
+                cout << "  No Last Copy Issue";
                 cout << "\n----------------------\n";
             }
-			else {
-				cout << "\n--------------------------------------------\n";
-                cout << "    No available copies of the book to issue";
+            else {
+                cout << "\n--------------------------------------------\n";
+                cout << "  No available copies of the book to issue";
                 cout << "\n--------------------------------------------\n";
             }
             return;
         }
     }
-	
-	cout << "\n-------------------\n";
-    cout << "    Book not found.";
+
+    cout << "\n-------------------\n";
+    cout << "  Book not found.";
     cout << "\n-------------------\n";
 }
+
+
+
+// Function to renew the return date for a book
+void renewBook(Book library[], int count) {
+    int bookID, studentID;
+
+    cout << "Enter the ID of the book to renew: ";
+    cin >> bookID;
+
+    cout << "Enter your Student CMS-ID: ";
+    cin >> studentID;
+
+    for (int i = 0; i < count; ++i) {
+        if (library[i].id == bookID) {
+            for (int j = 0; j < library[i].issuedCount; ++j) {
+                if (library[i].issuedCopies[j].borrower.studentID == studentID) {
+                    IssuedBook& issuedCopy = library[i].issuedCopies[j];
+
+                    // Automatically renew the return date to 7 days later
+                    issuedCopy.returnDate += 7 * 24 * 60 * 60; // 7 days in seconds
+
+                    // Format renewed return date
+                    tm* localReturnDate = localtime(&issuedCopy.returnDate);
+                    char returnDateStr[20];
+                    strftime(returnDateStr, sizeof(returnDateStr), "%Y-%m-%d", localReturnDate);
+
+                    cout << "\n-------------------------------------\n";
+                    cout << "  Book Renewed Successfully" << endl;
+                    cout << "  Renewed Return Date: " << returnDateStr << "\n";
+                    cout << "---------------------------------------\n";
+
+                    return;
+                }
+            }
+            cout << "\n-----------------------------------------------------\n";
+            cout << "  No issued copies found for the specified student.";
+            cout << "\n-----------------------------------------------------\n";
+            return;
+        }
+    }
+    cout << "\n-------------------\n";
+    cout << "  Book not found.";
+    cout << "\n-------------------\n";
+}
+
 
 void returnBook(Book library[], int count) {
     int bookID, studentID;
@@ -168,6 +250,10 @@ void returnBook(Book library[], int count) {
                     library[i].quantity++;
                     IssuedBook& issuedCopy = library[i].issuedCopies[j];
 
+                    // Get old return date as a string in the format "YYYY-MM-DD"
+                    char oldReturnDateStr[20];
+                    strftime(oldReturnDateStr, sizeof(oldReturnDateStr), "%Y-%m-%d", localtime(&issuedCopy.returnDate));
+
                     // Manually enter the return date
                     string returnDateStr;
                     cout << "Enter Return Date (YYYY-MM-DD): ";
@@ -180,12 +266,29 @@ void returnBook(Book library[], int count) {
                     // Check if the book is returned after 7 days (604800 seconds)
                     if (difftime(issuedCopy.returnDate, issuedCopy.issueDate) > 604800) {
                         // Apply penalty
-                        cout << "\n-------------------------------------------------------\n";
-                        cout << "    Book Returned After 7 Days. Penalty Applied: Rs." << PENALTY_AMOUNT;
-                        cout << "\n-------------------------------------------------------\n";
+                        cout << "\n----------------------------------------------------------\n";
+                        cout << "  Book Returned After Return Date. Penalty Applied: Rs." << PENALTY_AMOUNT;
+                        cout << "\n----------------------------------------------------------\n";
 
                         // Assuming there is a balance or penalty field for the student
                         issuedCopy.borrower.penalty += PENALTY_AMOUNT;
+                    }
+                    else{
+                    	cout << "\n-----------------------------------\n";
+                        cout << "  Book Returned Before Return Date.";
+                        cout << "\n-----------------------------------\n";
+					}
+
+                    // Check if the book is returned before, on, or after the expected return date
+                    if (difftime(issuedCopy.returnDate, issuedCopy.issueDate) <= 0) {
+                        cout << "\n-----------------------------------\n";
+                        cout << "  Last Return Date: " << oldReturnDateStr;
+                        cout << "\n-----------------------------------\n";
+                    } else {
+                        // Book returned after the expected return date
+                        cout << "\n-----------------------------------\n";
+                        cout << "  Last Return Date: " << oldReturnDateStr;
+                        cout << "\n-----------------------------------\n";
                     }
 
                     // Remove the returned copy from the issuedCopies array
@@ -194,23 +297,25 @@ void returnBook(Book library[], int count) {
                     }
 
                     library[i].issuedCount--;
-					
-					cout << "\n------------------------------\n";
-                    cout << "    Book Returned Successfully";
+
+                    cout << "\n------------------------------\n";
+                    cout << "  Book Returned Successfully";
                     cout << "\n------------------------------\n";
                     return;
                 }
             }
-			cout << "\n-----------------------------------------------------\n";
-            cout << "    No issued copies found for the specified student.";
+            cout << "\n-----------------------------------------------------\n";
+            cout << "  No issued copies found for the specified student.";
             cout << "\n-----------------------------------------------------\n";
             return;
         }
     }
-	cout << "\n-------------------\n";
-    cout << "    Book not found.";
+    cout << "\n-------------------\n";
+    cout << "  Book not found.";
     cout << "\n-------------------\n";
 }
+
+
 
 
 
@@ -227,50 +332,62 @@ void removeBook(Book library[], int& count) {
 
             --count;
             cout << "\n-----------------------------\n";
-            cout << "    Book Removed Successfully";
+            cout << "  Book Removed Successfully";
             cout << "\n-----------------------------\n";
             return;
         }
     }
 	cout << "\n-------------------\n";
-    cout << "    Book not found.";
+    cout << "  Book not found.";
     cout << "\n-------------------\n";
 }
 
 void viewIssuedBooks(const Book library[], int count) {
     bool issuedBooksExist = false;
-	
-	cout << "\n------------------------\n";
-    cout << "    <== Issued Books ==>";
+
     cout << "\n------------------------\n";
-    cout << setw(5) << "ID" << setw(10) << "Book Name" << setw(15) << "Book Author" << setw(20) << "Student CMS-ID" << setw(15) << "Student Name" << setw(20) << "Student Class" << endl;
+    cout << "  <== Issued Books ==>";
+    cout << "\n------------------------\n";
+    cout << setw(5) << "ID" << setw(20) << "Book Name" << setw(20) << "Book Author" << setw(18) << "Student CMS-ID"
+         << setw(20) << "Student Name" << setw(15) << "Student Class" << setw(15) << "Issue Date" << setw(15) << "Return Date" << "\n";
 
     for (int i = 0; i < count; ++i) {
         for (int j = 0; j < library[i].issuedCount; ++j) {
             issuedBooksExist = true;
 
-            cout << setw(5) << library[i].id << setw(10) << library[i].bookName << setw(15) << library[i].authorName
-                 << setw(15) << library[i].issuedCopies[j].borrower.studentID << setw(15) << library[i].issuedCopies[j].borrower.studentName
-                 << setw(20) << library[i].issuedCopies[j].borrower.studentClass << endl;
+            cout << setw(5) << library[i].id << setw(20) << library[i].bookName << setw(20) << library[i].authorName
+                 << setw(18) << library[i].issuedCopies[j].borrower.studentID << setw(20) << library[i].issuedCopies[j].borrower.studentName
+                 << setw(15) << library[i].issuedCopies[j].borrower.studentClass;
+
+            // Format issue date
+            char issueDateStr[20];
+            strftime(issueDateStr, sizeof(issueDateStr), "%Y-%m-%d", localtime(&library[i].issuedCopies[j].issueDate));
+            cout << setw(15) << issueDateStr;
+
+            // Format return date
+            char returnDateStr[20];
+            strftime(returnDateStr, sizeof(returnDateStr), "%Y-%m-%d", localtime(&library[i].issuedCopies[j].returnDate));
+            cout << setw(15) << returnDateStr << "\n";
         }
     }
 
     if (!issuedBooksExist) {
-    	cout << "\n----------------------------------\n";
-        cout << "    No books are currently issued.";
+        cout << "\n----------------------------------\n";
+        cout << "  No books are currently issued.";
         cout << "\n----------------------------------\n";
     }
 }
 
+
 int main()
 {
-	//interface
-	cout << "\t\t\t\t\t*******************************" << endl;
-	cout << "\t\t\t\t\t   LIBRARY MANAGNEMNT SYSTEM" << endl;
-	cout << "\t\t\t\t\t*******************************" << endl;
-	cout << "\t\t\t*****************************************************************\n";
-    cout << "\t\t\t   DEVELOPED BY: M HASNAIN MUGHAL / SHEHROZ ALI / KHALIL AREJO\n";
-    cout << "\t\t\t*****************************************************************\n\n";
+	//splash screen
+	displaySplashScreen();
+    loading();
+    
+	
+	//header
+	header();
 	
 	cout << "----------" << endl ;
 	cout << "  Login!" << endl;
@@ -294,26 +411,21 @@ int main()
 		system("PAUSE");
 		system("CLS");
 		
-	//chosse the option
-	cout << "\t\t\t\t\t*******************************" << endl;
-	cout << "\t\t\t\t\t   LIBRARY MANAGNEMNT SYSTEM" << endl;
-	cout << "\t\t\t\t\t*******************************" << endl;
-	cout << "\t\t\t*****************************************************************\n";
-    cout << "\t\t\t   DEVELOPED BY: M HASNAIN MUGHAL / SHEHROZ ALI / KHALIL AREJO\n";
-    cout << "\t\t\t*****************************************************************\n\n";
+	//header and choose the option
+	header();
 	
 	Book library[MAX_BOOKS];
     int bookCount = 0;
     int choice;
-
     while (true) {
         cout << "1. Add Book\n";
         cout << "2. View Books\n";
         cout << "3. Issue Book\n";
         cout << "4. Return Book\n";
-        cout << "5. Remove Book\n";
-        cout << "6. View Issued Books\n";
-        cout << "7. Exit\n\n";
+        cout << "5. Renew Book\n"; 
+        cout << "6. Remove Book\n";
+        cout << "7. View Issued Books\n";
+        cout << "8. Exit\n\n";
         cout << "Enter your choice: ";
         cin >> choice;
 
@@ -333,16 +445,20 @@ int main()
             case 4:
                 returnBook(library, bookCount);
                 break;
-
+                
             case 5:
-                removeBook(library, bookCount);
+                renewBook(library, bookCount);
                 break;
 
             case 6:
-                viewIssuedBooks(library, bookCount);
+                removeBook(library, bookCount);
                 break;
 
             case 7:
+                viewIssuedBooks(library, bookCount);
+                break;
+
+            case 8:
         		cout << "\n------------------------------------------------------\n";
         		cout << "    Thank you for using the Library Management System!\n";
         		cout << "------------------------------------------------------\n";
@@ -350,7 +466,7 @@ int main()
 
             default:
             	cout << "\n-----------------\n";
-                cout << "   Invalid Choice\n";
+                cout << "  Invalid Choice\n";
                 cout << "\n-----------------\n";
         }
 		
@@ -360,13 +476,8 @@ int main()
         cin.get();
         system("CLS");
         
-    	cout << "\t\t\t\t\t*******************************" << endl;
-		cout << "\t\t\t\t\t   LIBRARY MANAGNEMNT SYSTEM" << endl;
-		cout << "\t\t\t\t\t*******************************" << endl;
-		cout << "\t\t\t*****************************************************************\n";
-    	cout << "\t\t\t   DEVELOPED BY: M HASNAIN MUGHAL / SHEHROZ ALI / KHALIL AREJO\n";
-    	cout << "\t\t\t*****************************************************************\n\n";
-        
+        //after clear screen display the header
+    	header();
     }	
 	}
 	else
