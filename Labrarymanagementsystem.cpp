@@ -7,7 +7,7 @@
 using namespace std;
 
 const int MAX_BOOKS = 100;
-const int MAX_COPIES = 15;  // Maximum number of copies per book
+const int MAX_COPIES = 100;  // Maximum number of copies per book
 const int PENALTY_AMOUNT = 200;
 
 //add student data
