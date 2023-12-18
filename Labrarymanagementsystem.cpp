@@ -1,8 +1,8 @@
 #include <iostream>
 #include <iomanip>
 #include <cstring>
-#include <ctime>
-#include <unistd.h> // for sleep function
+#include <ctime>	// for use time functions
+#include <unistd.h> // for use sleep function
 
 using namespace std;
 
@@ -10,6 +10,7 @@ const int MAX_BOOKS = 100;
 const int MAX_COPIES = 15;  // Maximum number of copies per book
 const int PENALTY_AMOUNT = 200;
 
+//add student data
 struct Student {
     int studentID;
     char studentName[50];
@@ -17,6 +18,7 @@ struct Student {
     int penalty;
 };
 
+//add single copy book data
 struct IssuedBook {
     int bookID;
     time_t issueDate;
@@ -24,6 +26,7 @@ struct IssuedBook {
     Student borrower;
 };
 
+//add book data
 struct Book {
     int id;
     char bookName[50];
@@ -57,6 +60,7 @@ void loading() {
 	system("CLS");
 }
 
+// Function to display the header
 void header(){
 	cout << "\t\t\t\t\t*******************************" << endl;
 	cout << "\t\t\t\t\t   LIBRARY MANAGNEMNT SYSTEM" << endl;
@@ -75,6 +79,7 @@ void parseDate(const string& dateStr, tm& date) {
     date.tm_mon--;         // Adjust month
 }
 
+// Function to addbook
 void addBook(Book library[], int& count) {
     if (count >= MAX_BOOKS) {
     	cout << "\n-------------------------------------------\n";
@@ -109,6 +114,8 @@ void addBook(Book library[], int& count) {
     cout << "\n---------------------------\n";
 }
 
+// Function to print All Books
+
 void printBooks(const Book library[], int count) {
     if (count == 0) {
     	cout << "\n----------------------------\n";
@@ -126,6 +133,8 @@ void printBooks(const Book library[], int count) {
         cout << "\n";
     }
 }
+
+// Function to Issue Book
 
 void issueBook(Book library[], int count) {
     int bookID;
@@ -188,8 +197,6 @@ void issueBook(Book library[], int count) {
     cout << "\n-------------------\n";
 }
 
-
-
 // Function to renew the return date for a book
 void renewBook(Book library[], int count) {
     int bookID, studentID;
@@ -233,6 +240,7 @@ void renewBook(Book library[], int count) {
     cout << "\n-------------------\n";
 }
 
+// Function to Return the Book
 
 void returnBook(Book library[], int count) {
     int bookID, studentID;
@@ -315,9 +323,7 @@ void returnBook(Book library[], int count) {
     cout << "\n-------------------\n";
 }
 
-
-
-
+// Function to Remove the Book
 
 void removeBook(Book library[], int& count) {
     int bookID;
@@ -341,6 +347,8 @@ void removeBook(Book library[], int& count) {
     cout << "  Book not found.";
     cout << "\n-------------------\n";
 }
+
+// Function to View Issued Books
 
 void viewIssuedBooks(const Book library[], int count) {
     bool issuedBooksExist = false;
@@ -378,6 +386,7 @@ void viewIssuedBooks(const Book library[], int count) {
     }
 }
 
+//Main Body
 
 int main()
 {
@@ -393,7 +402,7 @@ int main()
 	cout << "  Login!" << endl;
 	cout << "----------" << endl;
 	
-	//make login system
+	//login system
 	string username,password;
 	
 	cout << "Enter Username: ";
@@ -474,7 +483,7 @@ int main()
         cout << "Press Enter to continue...";
         cin.ignore();
         cin.get();
-        system("CLS");
+        system("CLS"); //clear screen
         
         //after clear screen display the header
     	header();
@@ -489,4 +498,3 @@ int main()
 		
 	return 0;
 }
-
