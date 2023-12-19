@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstring>
+#include <windows.h>
 #include <ctime>	// for use time functions
 #include <unistd.h> // for use sleep function
 
@@ -36,9 +37,35 @@ struct Book {
     IssuedBook issuedCopies[MAX_COPIES];  // Store information about each issued copy
 };
 
+void maincolor()
+{
+	HANDLE h= GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(h, 3);
+}
+
+void welcomescreencolor()
+{
+	HANDLE h= GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(h, 11);
+}
+
+void successcolor()
+{
+	HANDLE h= GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(h, 2);
+}
+
+void faildcolor()
+{
+	HANDLE h= GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(h, 4);
+}
+
+
 // Function to display the splash screen
 void displaySplashScreen() {
     cout << "\n\n\n\n\n";
+    welcomescreencolor();
     cout << "\t\t\t\t\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
     cout << "\t\t\t\t\t           WELCOME TO" << endl;
 	cout << "\t\t\t\t\t   LIBRARY MANAGNEMNT SYSTEM" << endl;
@@ -62,6 +89,7 @@ void loading() {
 
 // Function to display the header
 void header(){
+	maincolor();
 	cout << "\t\t\t\t\t*******************************" << endl;
 	cout << "\t\t\t\t\t   LIBRARY MANAGNEMNT SYSTEM" << endl;
 	cout << "\t\t\t\t\t*******************************" << endl;
@@ -69,6 +97,7 @@ void header(){
     cout << "\t\t\t   DEVELOPED BY: M HASNAIN MUGHAL|SHEHROZ ALI|KHALIL AREJO\n";
     cout << "\t\t\t*************************************************************\n\n";
 }
+
 
 // Function to parse a date string into a tm structure
 void parseDate(const string& dateStr, tm& date) {
@@ -83,7 +112,9 @@ void parseDate(const string& dateStr, tm& date) {
 void addBook(Book library[], int& count) {
     if (count >= MAX_BOOKS) {
     	cout << "\n-------------------------------------------\n";
+    	faildcolor();
         cout << "  Library is full. Cannot add more books.";
+		maincolor();
         cout << "\n-------------------------------------------\n";
         return;
     }
@@ -110,7 +141,9 @@ void addBook(Book library[], int& count) {
     library[count++] = newBook;
     
     cout << "\n---------------------------\n";
+	successcolor();
     cout << "  Book Added Successfully";
+    maincolor();
     cout << "\n---------------------------\n";
 }
 
@@ -119,7 +152,9 @@ void addBook(Book library[], int& count) {
 void printBooks(const Book library[], int count) {
     if (count == 0) {
     	cout << "\n----------------------------\n";
+		faildcolor();
         cout << "  No books in the library.";
+        maincolor();
         cout << "\n----------------------------\n";
         return;
     }
@@ -173,19 +208,25 @@ void issueBook(Book library[], int count) {
                 issuedCopy.returnDate = mktime(returnDate);
 
                 cout << "\n--------------------------------------------\n";
+				successcolor();
                 cout << "  Book Issued Successfully" << endl;
                 cout << "  Return Date: " << asctime(returnDate);
+                maincolor();
                 cout << "----------------------------------------------\n";
 
             } else if(library[i].quantity == 1) {
 
                 cout << "\n----------------------\n";
+				faildcolor();
                 cout << "  No Last Copy Issue";
+                maincolor();
                 cout << "\n----------------------\n";
             }
             else {
                 cout << "\n--------------------------------------------\n";
+				faildcolor();
                 cout << "  No available copies of the book to issue";
+                maincolor();
                 cout << "\n--------------------------------------------\n";
             }
             return;
@@ -193,7 +234,9 @@ void issueBook(Book library[], int count) {
     }
 
     cout << "\n-------------------\n";
+    faildcolor();
     cout << "  Book not found.";
+    maincolor();
     cout << "\n-------------------\n";
 }
 
@@ -222,21 +265,27 @@ void renewBook(Book library[], int count) {
                     strftime(returnDateStr, sizeof(returnDateStr), "%Y-%m-%d", localReturnDate);
 
                     cout << "\n-------------------------------------\n";
+                    faildcolor();
                     cout << "  Book Renewed Successfully" << endl;
                     cout << "  Renewed Return Date: " << returnDateStr << "\n";
+                    maincolor();
                     cout << "---------------------------------------\n";
 
                     return;
                 }
             }
             cout << "\n-----------------------------------------------------\n";
+            faildcolor();
             cout << "  No issued copies found for the specified student.";
+            maincolor();
             cout << "\n-----------------------------------------------------\n";
             return;
         }
     }
     cout << "\n-------------------\n";
+    faildcolor();
     cout << "  Book not found.";
+    maincolor();
     cout << "\n-------------------\n";
 }
 
@@ -275,7 +324,9 @@ void returnBook(Book library[], int count) {
                     if (difftime(issuedCopy.returnDate, issuedCopy.issueDate) > 604800) {
                         // Apply penalty
                         cout << "\n----------------------------------------------------------\n";
+                        faildcolor();
                         cout << "  Book Returned After Return Date. Penalty Applied: Rs." << PENALTY_AMOUNT;
+                        maincolor();
                         cout << "\n----------------------------------------------------------\n";
 
                         // Assuming there is a balance or penalty field for the student
@@ -283,19 +334,25 @@ void returnBook(Book library[], int count) {
                     }
                     else{
                     	cout << "\n-----------------------------------\n";
+                    	successcolor();
                         cout << "  Book Returned Before Return Date.";
+                        maincolor();
                         cout << "\n-----------------------------------\n";
 					}
 
                     // Check if the book is returned before, on, or after the expected return date
                     if (difftime(issuedCopy.returnDate, issuedCopy.issueDate) <= 0) {
                         cout << "\n-----------------------------------\n";
+                        faildcolor();
                         cout << "  Last Return Date: " << oldReturnDateStr;
+                        maincolor();
                         cout << "\n-----------------------------------\n";
                     } else {
                         // Book returned after the expected return date
                         cout << "\n-----------------------------------\n";
+                        faildcolor();
                         cout << "  Last Return Date: " << oldReturnDateStr;
+                        maincolor();
                         cout << "\n-----------------------------------\n";
                     }
 
@@ -307,19 +364,25 @@ void returnBook(Book library[], int count) {
                     library[i].issuedCount--;
 
                     cout << "\n------------------------------\n";
+                    successcolor();
                     cout << "  Book Returned Successfully";
+                    maincolor();
                     cout << "\n------------------------------\n";
                     return;
                 }
             }
             cout << "\n-----------------------------------------------------\n";
+            faildcolor();
             cout << "  No issued copies found for the specified student.";
+            maincolor();
             cout << "\n-----------------------------------------------------\n";
             return;
         }
     }
     cout << "\n-------------------\n";
+    faildcolor();
     cout << "  Book not found.";
+    maincolor();
     cout << "\n-------------------\n";
 }
 
@@ -338,13 +401,17 @@ void removeBook(Book library[], int& count) {
 
             --count;
             cout << "\n-----------------------------\n";
+            successcolor();
             cout << "  Book Removed Successfully";
+            maincolor();
             cout << "\n-----------------------------\n";
             return;
         }
     }
 	cout << "\n-------------------\n";
+	faildcolor();
     cout << "  Book not found.";
+    maincolor();
     cout << "\n-------------------\n";
 }
 
@@ -381,7 +448,9 @@ void viewIssuedBooks(const Book library[], int count) {
 
     if (!issuedBooksExist) {
         cout << "\n----------------------------------\n";
+        faildcolor();
         cout << "  No books are currently issued.";
+        maincolor();
         cout << "\n----------------------------------\n";
     }
 }
@@ -414,7 +483,9 @@ int main()
 	if(username == "admin" && password == "admin")
 	{
 		cout << "-----------------------------" << endl;
+		successcolor();
 		cout << "    Login Successfully..." << endl;
+		maincolor();
 		cout << "-----------------------------" << endl;
 		
 		system("PAUSE");
@@ -469,13 +540,17 @@ int main()
 
             case 8:
         		cout << "\n------------------------------------------------------\n";
+        		successcolor();
         		cout << "    Thank you for using the Library Management System!\n";
+        		maincolor();
         		cout << "------------------------------------------------------\n";
                 return 0;
 
             default:
             	cout << "\n-----------------\n";
+            	faildcolor();
                 cout << "  Invalid Choice\n";
+                maincolor();
                 cout << "\n-----------------\n";
         }
 		
@@ -492,7 +567,9 @@ int main()
 	else
 	{
 		cout << "----------------------------------------------" << endl;
+		faildcolor();
 		cout << "   Invalid Username or Password Tryagain..." << endl;
+		maincolor();
 		cout << "----------------------------------------------" << endl;
 	}
 		
